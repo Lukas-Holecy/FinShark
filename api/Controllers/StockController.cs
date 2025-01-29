@@ -3,6 +3,7 @@ namespace api.Controllers;
 using System.Collections;
 using System.Collections.Generic;
 using api.Data;
+using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,14 +15,15 @@ public class StockController(ApplicationDBContext context) : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        var stocks = context.Stocks.ToList();
+        var stocks = context.Stocks.ToList().
+            Select(x => x.ToStockDto());
         return Ok(stocks);
     }
 
     [HttpGet("{id}")]
     public IActionResult GetById([FromRoute] int id)
     {
-        var stock = context.Stocks.Find(id);
+        var stock = context.Stocks.Find(id)?.ToStockDto();
         if (stock == null)
         {
             return NotFound();
