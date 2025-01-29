@@ -16,6 +16,7 @@ public class Stock
     /// <summary>
     /// Gets or sets the last dividend. This name is set to match the front ent.
     /// </summary>
+    [Column(TypeName = "decimal(18, 2)")]
     public decimal LastDiv { get; set; }
 
     public string Industry { get; set; } = string.Empty;
