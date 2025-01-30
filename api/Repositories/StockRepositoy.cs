@@ -32,12 +32,12 @@ public class StockRepository(ApplicationDBContext context) : IStockRepository
 
     public async Task<IEnumerable<Stock>> GetAllAsync()
     {
-        return await this.context.Stocks.ToListAsync();
+        return await this.context.Stocks.Include(c => c.Comments).ToListAsync();
     }
 
     public async Task<Stock?> GetByIdAsync(int id)
     {
-        return await this.context.Stocks.FindAsync(id);
+        return await this.context.Stocks.Include(c => c.Comments).FirstOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<Stock?> UpdateAsync(int id, UpdateStockDto stockDto)
