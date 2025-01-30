@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Comment;
-using api.Interfaces;
 using api.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,9 +11,11 @@ public class CommentRepository(ApplicationDBContext context) : ICommentRepositor
 {
     private readonly ApplicationDBContext context = context;
 
-    public Task<Comment> CreateCommentAsync(Comment comment)
+    public async Task<Comment> CreateCommentAsync(int stockId, Comment comment)
     {
-        throw new NotImplementedException();
+        await context.Comments.AddAsync(comment);
+        await context.SaveChangesAsync();
+        return comment;
     }
 
     public Task<Comment?> DeleteCommentAsync(int id)
@@ -24,7 +25,7 @@ public class CommentRepository(ApplicationDBContext context) : ICommentRepositor
 
     public async Task<Comment?> GetCommentByIdAsync(int id)
     {
-        return await his.context.Comments.FindAsync(id);
+        return await this.context.Comments.FindAsync(id);
     }
 
     public async Task<IEnumerable<Comment>> GetCommentsAsync()

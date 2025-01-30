@@ -58,4 +58,9 @@ public class StockRepository(ApplicationDBContext context) : IStockRepository
         await context.SaveChangesAsync();
         return stock;
     }
+
+    public async Task<bool> StockExistsAsync(int id)
+    {
+        return await this.context.Stocks.AnyAsync(e => e.Id == id);
+    }
 }
