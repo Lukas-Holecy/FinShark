@@ -5,20 +5,21 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using api.Data;
 using api.Dtos.Stock;
+using api.Interfaces;
 using api.Mappers;
 using api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 [Route("api/stock")]
-public class StockController(ApplicationDBContext context) : ControllerBase
+public class StockController(IStockRepository stockRepository) : ControllerBase
 {
-    private readonly ApplicationDBContext context = context;
+    private readonly IStockRepository stockRepository = stockRepository;
 
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
-        var stocks = await context.Stocks.ToListAsync();
+        var stocks = await stockRepository.GetAllAsync();
         var stockDtos = stocks.Select(x => x.ToStockDto());
         return Ok(stocks);
     }
@@ -26,7 +27,7 @@ public class StockController(ApplicationDBContext context) : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetByIdAsync([FromRoute] int id)
     {
-        var stock = await context.Stocks.FindAsync(id);
+        var stock = await stockRepository.GetByIdAsync(id);
         if (stock == null)
         {
             return NotFound();
@@ -39,42 +40,25 @@ public class StockController(ApplicationDBContext context) : ControllerBase
     public async Task<IActionResult> CreateAsync([FromBody] CreateStockDto stockDto)
     {
         var stockModel = stockDto.ToStock();
-        context.Stocks.Add(stockModel);
-        await context.SaveChangesAsync();
+        await this.stockRepository.CreateAsync(stockModel);
         return CreatedAtAction(nameof(GetByIdAsync), new { id = stockModel.Id }, stockModel.ToStockDto());
     }
 
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAsync([FromRoute] int id, [FromBody] UpdateStockDto stockDto)
     {
-        var stock = await context.Stocks.FindAsync(id);
+        var stock = await stockRepository.UpdateAsync(id, stockDto);
         if (stock == null)
         {
             return NotFound();
         }
 
-        stock.Symbol = stockDto.Symbol;
-        stock.CompanyName = stockDto.CompanyName;
-        stock.Purchase = stockDto.Purchase;
-        stock.LastDiv = stockDto.LastDiv;
-        stock.Industry = stockDto.Industry;
-        stock.MarketCap = stockDto.MarketCap;
-
-        await context.SaveChangesAsync();
         return Ok(stock.ToStockDto());
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync([FromRoute] int id)
     {
-        var stock = await context.Stocks.FindAsync(id);
-        if (stock == null)
-        {
-            return NotFound();
-        }
-
-        context.Stocks.Remove(stock);
-        await context.SaveChangesAsync();
-        return NoContent();
+        return await stockRepository.DeleteAsync(id) is null ? NotFound() : NoContent();
     }
 }
